@@ -1,13 +1,62 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <title>Express</title>
-  <link rel="stylesheet" href="/stylesheets/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oil Price Query</title>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('oil_form').addEventListener('submit', async (event) => {
+        event.preventDefault(); // Prevent the form from submitting normally
+
+        const formData = {
+          s_date: document.getElementById('s_date').value,
+          e_date: document.getElementById('e_date').value,
+          price_98: document.getElementById('price_98').value,
+          price_95: document.getElementById('price_95').value,
+          price_92: document.getElementById('price_92').value,
+          price_diesel: document.getElementById('price_diesel').value
+        };
+
+        try {
+          const response = await fetch('/api/search', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+          });
+
+          if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+          }
+
+          const data = await response.json();
+          document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        } catch (error) {
+          console.error('There has been a problem with your fetch operation:', error);
+          document.getElementById('result').innerHTML = '<p style="color: red;">An error occurred while fetching data.</p>';
+        }
+      });
+    });
+  </script>
 </head>
-
 <body>
-  <h1>Express</h1>
-  <p>Welcome to Express</p>
+<form id="oil_form">
+  <label for="s_date">Start Date:</label>
+  <input id="s_date" name="s_date" type="text"><br><br>
+  <label for="e_date">End Date:</label>
+  <input id="e_date" name="e_date" type="text"><br><br>
+  <label for="price_98">Price 98:</label>
+  <input id="price_98" name="price_98" type="text"><br><br>
+  <label for="price_95">Price 95:</label>
+  <input id="price_95" name="price_95" type="text"><br><br>
+  <label for="price_92">Price 92:</label>
+  <input id="price_92" name="price_92" type="text"><br><br>
+  <label for="price_diesel">Price Diesel:</label>
+  <input id="price_diesel" name="price_diesel" type="text"><br><br>
+  <input type="submit" value="Submit">
+</form>
+<div id="result"></div>
 </body>
-
 </html>

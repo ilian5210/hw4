@@ -27,3 +27,53 @@ const db = new sqlite3.Database('db/sqlite.db', (err) => {
     console.log('Connected to the SQlite database.');
 });
 
+app.get('/api/quotes', (req, res) => {
+    db.all('SELECT * FROM OilPrice', (err, rows) => {
+        if (err) {
+            console.error(err.message);
+        }
+        res.json(rows);
+    });
+});
+
+app.post('/api/search', (req, res) => {
+    const { s_date, e_date, price_98, price_95, price_92, price_diesel } = req.body;
+
+    let sql = 'SELECT * FROM OilPrice';
+    const conditions = [];
+    const params = [];
+
+    if (s_date && e_date) {
+        conditions.push('date BETWEEN ? AND ?');
+        params.push(s_date, e_date);
+    }
+    if (price_98) {
+        conditions.push('price_98 = ?');
+        params.push(price_98);
+    }
+    if (price_95) {
+        conditions.push('price_95 = ?');
+        params.push(price_95);
+    }
+    if (price_92) {
+        conditions.push('price_92 = ?');
+        params.push(price_92);
+    }
+    if (price_diesel) {
+        conditions.push('price_diesel = ?');
+        params.push(price_diesel);
+    }
+
+    if (conditions.length > 0) {
+        sql += ' WHERE ' + conditions.join(' AND ');
+    }
+
+    db.all(sql, params, (err, rows) => {
+        if (err) {
+            console.error(err.message);
+            res.status(500).send('Internal Server Error');
+            return;
+        }
+        res.json(rows);
+    });
+});
